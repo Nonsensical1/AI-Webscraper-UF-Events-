@@ -10,7 +10,7 @@ export const findEvents = async (location: string, topics: string, month: string
 
   const prompt = `
     Act as an expert event curator performing a comprehensive web search.
-    Your task is to find events happening in ${month} ${year} in the following location: "${location}".
+    Your task is to find events happening in ${month} ${year} at or related to the following university or location: "${location}".
 
     You must *strictly limit* your search to the topics and categories provided by the user below:
     ---

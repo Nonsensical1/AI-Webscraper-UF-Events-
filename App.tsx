@@ -13,8 +13,8 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [location, setLocation] = useState<string>('Gainesville, Florida');
-  const [topics, setTopics] = useState<string>('Concerts, biotech conferences, and University of Florida seminars in biology and engineering.');
+  const [location, setLocation] = useState<string>('University of Florida');
+  const [topics, setTopics] = useState<string>('Concerts, biotech conferences, and seminars in biology and engineering.');
   
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toLocaleString('default', { month: 'long' }));
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
@@ -25,7 +25,7 @@ const App: React.FC = () => {
 
   const handleFindEvents = useCallback(async () => {
     if (!location.trim() || !topics.trim()) {
-        setError("Please provide both a location and topics to search for.");
+        setError("Please provide both a university/location and topics to search for.");
         return;
     }
     setIsLoading(true);
@@ -73,20 +73,20 @@ const App: React.FC = () => {
             Universal AI Event Finder
           </h1>
           <p className="mt-2 text-slate-400 max-w-2xl mx-auto">
-            Describe a location and topics of interest. The AI will find relevant events and generate a calendar file for you.
+            Describe a university or location and your topics of interest. The AI will find relevant events and generate a calendar file for you.
           </p>
         </header>
 
         <div className="bg-slate-800/50 backdrop-blur-sm p-6 rounded-xl shadow-2xl shadow-slate-900/50 mb-10 border border-slate-700">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-                <label htmlFor="location" className="block text-sm font-medium text-slate-300 mb-1">Location</label>
+                <label htmlFor="location" className="block text-sm font-medium text-slate-300 mb-1">University / Location</label>
                 <input 
                     type="text"
                     id="location"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    placeholder="e.g., San Francisco, CA"
+                    placeholder="e.g., Stanford University"
                     className="w-full bg-slate-700 border-slate-600 text-white rounded-md px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
             </div>
@@ -172,7 +172,7 @@ const App: React.FC = () => {
         ) : !error && (
             <div className="text-center py-16 px-6 bg-slate-800 rounded-xl border border-dashed border-slate-700">
                 <h2 className="text-2xl font-semibold text-slate-300">Welcome!</h2>
-                <p className="mt-2 text-slate-400">Enter a location and your topics of interest, then click "Find Events" to get started.</p>
+                <p className="mt-2 text-slate-400">Enter a university or location and your topics of interest, then click "Find Events" to get started.</p>
             </div>
         )}
       </main>
