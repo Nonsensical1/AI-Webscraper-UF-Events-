@@ -9,13 +9,15 @@ export const findEvents = async (month: string, year: number): Promise<{ events:
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   const prompt = `
-    Act as an expert event curator. Find events happening in ${month} ${year} in Gainesville, Florida. Your search should include:
-    1. Concerts of any genre.
-    2. Reputable academic and industry conferences in the fields of biotechnology, biomedicine, protein engineering, genetic engineering, and molecular biology.
-    3. Music recitals at the University of Florida (UF).
-    4. Academic events (seminars, talks, workshops) at the University of Florida (UF) from departments related to the scientific fields mentioned above.
+    Act as an expert event curator performing a comprehensive web search. Find a wide variety of events happening in ${month} ${year} in Gainesville, Florida. Your search should be thorough and include, but is not limited to:
+    1. Concerts and live music events of all genres.
+    2. Reputable academic and industry conferences, both local and major ones relevant to the area. Focus on fields like biotechnology, biomedicine, life sciences, pharmaceuticals, protein engineering, genetic engineering, bioinformatics, and molecular biology.
+    3. Music recitals, plays, and art exhibitions, especially those hosted at the University of Florida (UF) and Santa Fe College.
+    4. A wide range of academic events (seminars, guest lectures, symposiums, talks, workshops) at the University of Florida (UF). Specifically search for events from the College of Medicine, College of Pharmacy, Herbert Wertheim College of Engineering (especially Biomedical Engineering), Institute of Food and Agricultural Sciences (IFAS), and the departments of Biology, Chemistry, Biochemistry and Molecular Biology.
 
-    For each event you find, provide the event name, a concise one-sentence description, the date in YYYY-MM-DD format, the start time in HH:MM (24-hour) format, and the location. 
+    For each event you find, provide the event name, a concise one-sentence description, the date in YYYY-MM-DD format, the start time in HH:MM (24-hour) format, and the specific location (e.g., building and room number if available).
+    
+    Your goal is to find as many relevant events as possible.
     
     Please return the result *only* as a JSON array of objects that conforms to this TypeScript interface:
     interface Event {
