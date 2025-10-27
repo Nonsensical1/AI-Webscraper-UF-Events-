@@ -1,0 +1,5 @@
+{
+  "name": "AI Event Scraper & Calendar Generator",
+  "description": "An AI-powered application that finds local concerts, academic conferences, and university events on specific topics. It scrapes event details like name, description, date, and time, then compiles them into a downloadable iCalendar (.ics) file for any given month.",
+  "requestFramePermissions": []
+}
