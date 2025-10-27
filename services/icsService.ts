@@ -1,23 +1,16 @@
-
 import { Event } from '../types';
 
-// Helper to format date and time for iCalendar standard (UTC)
-const formatIcsDateTime = (dateStr: string, timeStr: string): string => {
-  const [year, month, day] = dateStr.split('-').map(Number);
-  const [hours, minutes] = timeStr.split(':').map(Number);
-  
-  // Create a date object assuming local time, then get UTC components
-  const date = new Date(year, month - 1, day, hours, minutes);
-  
-  const pad = (num: number) => num.toString().padStart(2, '0');
+// Helper to format a Date object for iCalendar standard (UTC)
+const formatDateToIcs = (date: Date): string => {
+    const pad = (num: number) => num.toString().padStart(2, '0');
 
-  const yearUTC = date.getUTCFullYear();
-  const monthUTC = pad(date.getUTCMonth() + 1);
-  const dayUTC = pad(date.getUTCDate());
-  const hoursUTC = pad(date.getUTCHours());
-  const minutesUTC = pad(date.getUTCMinutes());
+    const yearUTC = date.getUTCFullYear();
+    const monthUTC = pad(date.getUTCMonth() + 1);
+    const dayUTC = pad(date.getUTCDate());
+    const hoursUTC = pad(date.getUTCHours());
+    const minutesUTC = pad(date.getUTCMinutes());
 
-  return `${yearUTC}${monthUTC}${dayUTC}T${hoursUTC}${minutesUTC}00Z`;
+    return `${yearUTC}${monthUTC}${dayUTC}T${hoursUTC}${minutesUTC}00Z`;
 };
 
 export const generateIcsContent = (events: Event[]): string => {
@@ -25,12 +18,29 @@ export const generateIcsContent = (events: Event[]): string => {
     const uid = `${event.date}-${event.eventName.replace(/[^a-zA-Z0-9]/g, "")}@aieventscraper.com`;
     const dtstamp = new Date().toISOString().replace(/[-:.]/g, "").slice(0, 15) + "Z";
 
-    const dtstart = formatIcsDateTime(event.date, event.time);
-    
-    // Assume a 2-hour duration for events if no end time is provided
-    const startDate = new Date(dtstart);
+    // Create the start date object from event data, with robust parsing.
+    const [year, month, day] = (event.date || '').split('-').map(Number);
+    const [hours, minutes] = (event.time || '00:00').split(':').map(Number);
+
+    // Check if parts are valid numbers before creating a Date.
+    if (isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hours) || isNaN(minutes)) {
+        console.warn(`Skipping event with invalid date/time parts: ${event.eventName}`);
+        return ''; // Skip this event if date/time is invalid
+    }
+
+    const startDate = new Date(year, month - 1, day, hours, minutes);
+
+    // Check if the created date is valid
+    if (isNaN(startDate.getTime())) {
+        console.warn(`Skipping event due to invalid Date object: ${event.eventName}`);
+        return ''; // Skip invalid date
+    }
+
+    // Assume a 2-hour duration for events
     const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
-    const dtend = endDate.toISOString().replace(/[-:.]/g, "").slice(0, 15) + "Z";
+
+    const dtstart = formatDateToIcs(startDate);
+    const dtend = formatDateToIcs(endDate);
 
     return `
 BEGIN:VEVENT
@@ -43,7 +53,7 @@ DESCRIPTION:${event.description.replace(/\n/g, '\\n')}
 LOCATION:${event.location.replace(/\n/g, '\\n')}
 END:VEVENT
     `.trim();
-  }).join('\n');
+  }).filter(Boolean).join('\n'); // Filter out empty strings from skipped events
 
   return `
 BEGIN:VCALENDAR

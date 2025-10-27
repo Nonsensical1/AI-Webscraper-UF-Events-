@@ -5,6 +5,7 @@ export interface Event {
   date: string; // YYYY-MM-DD
   time: string; // HH:MM
   location: string;
+  category: string; // e.g., "Concert", "Conference", "Seminar"
 }
 
 export interface GroundingChunk {

@@ -1,7 +1,7 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { Event, GroundingChunk } from '../types';
 
-export const findEvents = async (month: string, year: number): Promise<{ events: Event[]; sources: GroundingChunk[] }> => {
+export const findEvents = async (location: string, topics: string, month: string, year: number): Promise<{ events: Event[]; sources: GroundingChunk[] }> => {
   if (!process.env.API_KEY) {
     throw new Error("API_KEY environment variable not set");
   }
@@ -9,26 +9,27 @@ export const findEvents = async (month: string, year: number): Promise<{ events:
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   const prompt = `
-    Act as an expert event curator performing a comprehensive web search. Find a wide variety of events happening in ${month} ${year} in Gainesville, Florida. Your search should be thorough and include, but is not limited to:
-    1. Concerts and live music events of all genres.
-    2. Reputable academic and industry conferences, both local and major ones relevant to the area. Focus on fields like biotechnology, biomedicine, life sciences, pharmaceuticals, protein engineering, genetic engineering, bioinformatics, and molecular biology.
-    3. Music recitals, plays, and art exhibitions, especially those hosted at the University of Florida (UF) and Santa Fe College.
-    4. A wide range of academic events (seminars, guest lectures, symposiums, talks, workshops) at the University of Florida (UF). Specifically search for events from the College of Medicine, College of Pharmacy, Herbert Wertheim College of Engineering (especially Biomedical Engineering), Institute of Food and Agricultural Sciences (IFAS), and the departments of Biology, Chemistry, Biochemistry and Molecular Biology.
+    Act as an expert event curator performing a comprehensive web search.
+    Your task is to find events happening in ${month} ${year} in the following location: "${location}".
 
-    For each event you find, provide the event name, a concise one-sentence description, the date in YYYY-MM-DD format, the start time in HH:MM (24-hour) format, and the specific location (e.g., building and room number if available).
+    You must *strictly limit* your search to the topics and categories provided by the user below:
+    ---
+    TOPICS: "${topics}"
+    ---
+
+    For each event you find that matches the criteria, provide the event name, a concise one-sentence description, the date (YYYY-MM-DD), the start time (HH:MM 24-hour), the specific location, and a relevant category (e.g., "Concert", "Conference", "Seminar", "Art Show", "Workshop").
     
-    Your goal is to find as many relevant events as possible.
-    
-    Please return the result *only* as a JSON array of objects that conforms to this TypeScript interface:
+    Return the result *only* as a JSON array of objects that conforms to this TypeScript interface:
     interface Event {
       eventName: string;
       description: string;
       date: string; // YYYY-MM-DD
       time: string; // HH:MM
       location: string;
+      category: string; // e.g., "Concert", "Conference", "Seminar"
     }
     
-    Do not include any other text, commentary, or markdown formatting. If no events are found, return an empty array: [].
+    Do not include any other text, commentary, or markdown formatting. If no relevant events are found, return an empty array: [].
   `;
 
   try {

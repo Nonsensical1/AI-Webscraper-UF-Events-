@@ -12,6 +12,10 @@ const App: React.FC = () => {
   const [sources, setSources] = useState<GroundingChunk[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [location, setLocation] = useState<string>('Gainesville, Florida');
+  const [topics, setTopics] = useState<string>('Concerts, biotech conferences, and University of Florida seminars in biology and engineering.');
+  
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toLocaleString('default', { month: 'long' }));
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
@@ -20,12 +24,16 @@ const App: React.FC = () => {
   const years = Array.from({ length: 5 }, (_, i) => currentYear + i);
 
   const handleFindEvents = useCallback(async () => {
+    if (!location.trim() || !topics.trim()) {
+        setError("Please provide both a location and topics to search for.");
+        return;
+    }
     setIsLoading(true);
     setError(null);
     setEvents([]);
     setSources([]);
     try {
-      const { events: foundEvents, sources: foundSources } = await findEvents(selectedMonth, selectedYear);
+      const { events: foundEvents, sources: foundSources } = await findEvents(location, topics, selectedMonth, selectedYear);
       setEvents(foundEvents);
       setSources(foundSources);
     } catch (err: any) {
@@ -33,7 +41,7 @@ const App: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedMonth, selectedYear]);
+  }, [location, topics, selectedMonth, selectedYear]);
 
   const handleDownloadIcs = () => {
     if (events.length === 0) return;
@@ -62,33 +70,57 @@ const App: React.FC = () => {
       <main className="container mx-auto px-4 py-8 md:py-12">
         <header className="text-center mb-10">
           <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
-            AI Event Scraper
+            Universal AI Event Finder
           </h1>
           <p className="mt-2 text-slate-400 max-w-2xl mx-auto">
-            Find local concerts, conferences, and university events, then generate a calendar file for your favorite month.
+            Describe a location and topics of interest. The AI will find relevant events and generate a calendar file for you.
           </p>
         </header>
 
         <div className="bg-slate-800/50 backdrop-blur-sm p-6 rounded-xl shadow-2xl shadow-slate-900/50 mb-10 border border-slate-700">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+                <label htmlFor="location" className="block text-sm font-medium text-slate-300 mb-1">Location</label>
+                <input 
+                    type="text"
+                    id="location"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="e.g., San Francisco, CA"
+                    className="w-full bg-slate-700 border-slate-600 text-white rounded-md px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+            </div>
+            <div className="md:col-span-2">
+                <label htmlFor="topics" className="block text-sm font-medium text-slate-300 mb-1">Topics</label>
+                <textarea 
+                    id="topics"
+                    value={topics}
+                    onChange={(e) => setTopics(e.target.value)}
+                    placeholder="e.g., Art exhibitions, tech meetups, jazz concerts"
+                    rows={2}
+                    className="w-full bg-slate-700 border-slate-600 text-white rounded-md px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+            </div>
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="bg-slate-700 border-slate-600 text-white rounded-md px-4 py-2 w-full md:w-auto focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="bg-slate-700 border-slate-600 text-white rounded-md px-4 py-2 w-full focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             >
               {monthNames.map(month => <option key={month} value={month}>{month}</option>)}
             </select>
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="bg-slate-700 border-slate-600 text-white rounded-md px-4 py-2 w-full md:w-auto focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="bg-slate-700 border-slate-600 text-white rounded-md px-4 py-2 w-full focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             >
               {years.map(year => <option key={year} value={year}>{year}</option>)}
             </select>
-            <button
+          </div>
+          <div className="mt-4">
+             <button
               onClick={handleFindEvents}
               disabled={isLoading}
-              className="flex items-center justify-center gap-2 w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-md transition-all duration-300 disabled:bg-indigo-400 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-md transition-all duration-300 disabled:bg-indigo-400 disabled:cursor-not-allowed"
             >
               <SearchIcon className="w-5 h-5" />
               {isLoading ? 'Searching...' : 'Find Events'}
@@ -140,7 +172,7 @@ const App: React.FC = () => {
         ) : !error && (
             <div className="text-center py-16 px-6 bg-slate-800 rounded-xl border border-dashed border-slate-700">
                 <h2 className="text-2xl font-semibold text-slate-300">Welcome!</h2>
-                <p className="mt-2 text-slate-400">Select a month and year, then click "Find Events" to get started.</p>
+                <p className="mt-2 text-slate-400">Enter a location and your topics of interest, then click "Find Events" to get started.</p>
             </div>
         )}
       </main>
